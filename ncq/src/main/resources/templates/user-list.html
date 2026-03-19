@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage User Accounts</title>
+    <style>
+        :root {
+            --bg: #f7f3eb;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --card: rgba(255, 255, 255, 0.82);
+            --line: rgba(148, 163, 184, 0.22);
+            --shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+            --hero-a: #0f3d3e;
+            --hero-b: #155e75;
+            --hero-c: #d97706;
+            --mint: #0f766e;
+            --mint-soft: #ccfbf1;
+            --amber: #b45309;
+            --amber-soft: #fef3c7;
+            --rose: #be123c;
+            --rose-soft: #ffe4e6;
+            --slate-soft: #eef2f7;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 24%),
+                radial-gradient(circle at top right, rgba(217, 119, 6, 0.18), transparent 28%),
+                linear-gradient(180deg, #f5efe4 0%, #f8f6f0 44%, #f6f8fb 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 28px 20px 48px;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 30px;
+            padding: 34px;
+            color: #fff7ed;
+            background:
+                radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.18), transparent 18%),
+                linear-gradient(135deg, var(--hero-a) 0%, var(--hero-b) 52%, var(--hero-c) 100%);
+            box-shadow: var(--shadow);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            right: -70px;
+            bottom: -90px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: rgba(255, 247, 237, 0.12);
+            border: 1px solid rgba(255, 247, 237, 0.16);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 16px 0 10px;
+            font-size: clamp(30px, 5vw, 46px);
+            line-height: 1.05;
+        }
+
+        .hero-copy {
+            max-width: 650px;
+            margin: 0;
+            color: rgba(255, 247, 237, 0.84);
+            line-height: 1.7;
+        }
+
+        .add-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border: none;
+            color: #fff7ed;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+        }
+
+        .ghost-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 16px;
+            padding: 14px 18px;
+            font-weight: 700;
+            background: rgba(255, 247, 237, 0.92);
+            color: #12354a;
+        }
+
+        .dashboard {
+            margin-top: -24px;
+            position: relative;
+            z-index: 2;
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            padding: 28px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 26px;
+        }
+
+        .stat-card {
+            border-radius: 22px;
+            padding: 18px;
+            color: #fff;
+            min-height: 132px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        .stat-card:nth-child(1) {
+            background: linear-gradient(135deg, #12354a 0%, #155e75 100%);
+        }
+
+        .stat-card:nth-child(2) {
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+        }
+
+        .stat-card:nth-child(3) {
+            background: linear-gradient(135deg, #9f1239 0%, #e11d48 100%);
+        }
+
+        .stat-card:nth-child(4) {
+            background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.84;
+            margin-bottom: 18px;
+        }
+
+        .stat-value {
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .stat-note {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .toolbar h2 {
+            margin: 0 0 6px;
+            font-size: 24px;
+        }
+
+        .toolbar p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ui-chip {
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--muted);
+            padding: 11px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        }
+
+        .search {
+            min-width: 240px;
+        }
+
+        .table-shell {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 920px;
+        }
+
+        thead {
+            background: linear-gradient(180deg, #fffaf4 0%, #f8fafc 100%);
+        }
+
+        th, td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        tbody tr:hover {
+            background: rgba(248, 250, 252, 0.9);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            background: linear-gradient(135deg, #155e75 0%, #f59e0b 100%);
+            box-shadow: 0 12px 24px rgba(21, 94, 117, 0.22);
+        }
+
+        .user-name {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .user-note {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .role-badge,
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .role-badge {
+            background: #ecfeff;
+            color: #155e75;
+            border: 1px solid rgba(21, 94, 117, 0.12);
+        }
+
+        .status-active {
+            background: var(--mint-soft);
+            color: var(--mint);
+            border: 1px solid rgba(15, 118, 110, 0.12);
+        }
+
+        .status-locked {
+            background: var(--rose-soft);
+            color: var(--rose);
+            border: 1px solid rgba(190, 18, 60, 0.12);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            border: none;
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .edit-btn {
+            background: var(--amber-soft);
+            color: var(--amber);
+        }
+
+        .lock-btn {
+            background: var(--slate-soft);
+            color: #334155;
+        }
+
+        .foot {
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 980px) {
+            .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .hero-inner {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page {
+                padding: 18px 12px 32px;
+            }
+
+            .hero,
+            .dashboard {
+                border-radius: 22px;
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .table-shell {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <section class="hero">
+        <div class="hero-inner">
+            <div>
+                <div class="pill">Administration Console</div>
+                <h1>Manage User Accounts</h1>
+                <p class="hero-copy">A modern back-office view for monitoring permissions, reviewing account status, and keeping dealership operations under control.</p>
+            </div>
+            <div class="actions">
+                <a class="ghost-btn" th:href="@{/admin/notification-templates}">Notification Templates</a>
+                <a class="add-btn" th:href="@{/admin/users/add}">+ Add User</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total users</div>
+                <div class="stat-value" th:text="${#lists.size(users)}">0</div>
+                <div class="stat-note">Accounts currently registered</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active users</div>
+                <div class="stat-value" th:text="${#aggregates.sum(users.![status.name() == 'ACTIVE' ? 1 : 0])}">0</div>
+                <div class="stat-note">Can access the system now</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Locked users</div>
+                <div class="stat-value" th:text="${#aggregates.sum(users.![status.name() == 'LOCKED' ? 1 : 0])}">0</div>
+                <div class="stat-note">Require admin review</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Team roles</div>
+                <div class="stat-value">3</div>
+                <div class="stat-note">Permission groups in use</div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div>
+                <h2>User Directory</h2>
+                <p>Overview of account ownership, role assignment, and current security state.</p>
+            </div>
+            <div class="toolbar-actions">
+                <div class="ui-chip search">Search name or email</div>
+                <div class="ui-chip">All roles</div>
+                <div class="ui-chip">Latest activity</div>
+            </div>
+        </div>
+
+        <div class="table-shell">
+            <table>
+                <thead>
+                <tr>
+                    <th>User</th>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}">
+                    <td>
+                        <div class="user-cell">
+                            <div class="avatar" th:text="${#strings.substring(user.fullName,0,1)}">U</div>
+                            <div>
+                                <div class="user-name" th:text="${user.fullName}">Full Name</div>
+                                <div class="user-note">Dealership staff account</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td th:text="${user.id}"></td>
+                    <td th:text="${user.email}"></td>
+                    <td>
+                        <span class="role-badge" th:text="${user.role}">Role</span>
+                    </td>
+                    <td>
+                        <span class="status-badge"
+                              th:text="${user.status}"
+                              th:classappend="${user.status.name() == 'ACTIVE'} ? ' status-active' : ' status-locked'">
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a class="action-btn edit-btn" th:href="@{/admin/users/{id}/edit(id=${user.id})}">Edit</a>
+                            <button class="action-btn lock-btn"
+                                    th:text="${user.status.name() == 'ACTIVE'} ? 'Lock' : 'Unlock'">
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="foot">
+            <span th:text="|Showing ${#lists.size(users)} users|">Showing 0 users</span>
+            <span>Updated for daily operations</span>
+        </div>
+    </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Notification Templates</title>
+    <style>
+        :root {
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --line: rgba(148, 163, 184, 0.22);
+            --card: rgba(255, 255, 255, 0.82);
+            --shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+            --hero-a: #0f3d3e;
+            --hero-b: #155e75;
+            --hero-c: #d97706;
+            --green: #0f766e;
+            --green-soft: #ccfbf1;
+            --amber: #b45309;
+            --amber-soft: #fef3c7;
+            --slate-soft: #eef2f7;
+            --rose: #be123c;
+            --rose-soft: #ffe4e6;
+            --blue: #1d4ed8;
+            --blue-soft: #dbeafe;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 24%),
+                radial-gradient(circle at top right, rgba(217, 119, 6, 0.18), transparent 28%),
+                linear-gradient(180deg, #f5efe4 0%, #f8f6f0 44%, #f6f8fb 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 28px 20px 48px;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 30px;
+            padding: 34px;
+            color: #fff7ed;
+            background:
+                radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.18), transparent 18%),
+                linear-gradient(135deg, var(--hero-a) 0%, var(--hero-b) 52%, var(--hero-c) 100%);
+            box-shadow: var(--shadow);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            right: -70px;
+            bottom: -90px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: flex-start;
+        }
+
+        .pill {
+            display: inline-flex;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: rgba(255, 247, 237, 0.12);
+            border: 1px solid rgba(255, 247, 237, 0.16);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 16px 0 10px;
+            font-size: clamp(30px, 5vw, 46px);
+            line-height: 1.05;
+        }
+
+        .hero-copy {
+            max-width: 700px;
+            margin: 0;
+            color: rgba(255, 247, 237, 0.84);
+            line-height: 1.7;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 16px;
+            padding: 14px 18px;
+            font-weight: 700;
+        }
+
+        .hero-btn-primary {
+            color: #fff7ed;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+        }
+
+        .hero-btn-secondary {
+            color: #12354a;
+            background: rgba(255, 247, 237, 0.9);
+        }
+
+        .dashboard {
+            margin-top: -24px;
+            position: relative;
+            z-index: 2;
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            padding: 28px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 26px;
+        }
+
+        .stat-card {
+            border-radius: 22px;
+            padding: 18px;
+            color: #fff;
+            min-height: 128px;
+        }
+
+        .stat-card:nth-child(1) {
+            background: linear-gradient(135deg, #12354a 0%, #155e75 100%);
+        }
+
+        .stat-card:nth-child(2) {
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+        }
+
+        .stat-card:nth-child(3) {
+            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+        }
+
+        .stat-card:nth-child(4) {
+            background: linear-gradient(135deg, #9f1239 0%, #e11d48 100%);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.84;
+            margin-bottom: 18px;
+        }
+
+        .stat-value {
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .stat-note {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .toolbar h2 {
+            margin: 0 0 6px;
+            font-size: 24px;
+        }
+
+        .toolbar p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--muted);
+            padding: 11px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        }
+
+        .table-shell {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1100px;
+        }
+
+        thead {
+            background: linear-gradient(180deg, #fffaf4 0%, #f8fafc 100%);
+        }
+
+        th, td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        tbody tr:hover {
+            background: rgba(248, 250, 252, 0.9);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .template-name {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .template-meta {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .channel-email {
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .channel-sms {
+            background: var(--amber-soft);
+            color: var(--amber);
+        }
+
+        .channel-system {
+            background: var(--slate-soft);
+            color: #334155;
+        }
+
+        .status-active {
+            background: var(--green-soft);
+            color: var(--green);
+        }
+
+        .status-draft {
+            background: var(--rose-soft);
+            color: var(--rose);
+        }
+
+        .message-preview {
+            max-width: 360px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-weight: 700;
+        }
+
+        .edit-btn {
+            background: var(--amber-soft);
+            color: var(--amber);
+        }
+
+        .preview-btn {
+            background: var(--slate-soft);
+            color: #334155;
+        }
+
+        .foot {
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 980px) {
+            .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .hero-inner {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page {
+                padding: 18px 12px 32px;
+            }
+
+            .hero,
+            .dashboard {
+                border-radius: 22px;
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .table-shell {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <section class="hero">
+        <div class="hero-inner">
+            <div>
+                <div class="pill">UC-39 Admin Module</div>
+                <h1>Manage Notification Templates</h1>
+                <p class="hero-copy">Centralize email, SMS, and system notification content for dealership events like test drive booking, quotation sending, contract signing, and payment confirmation.</p>
+            </div>
+            <div class="hero-actions">
+                <a class="hero-btn hero-btn-secondary" th:href="@{/admin/users}">User Accounts</a>
+                <a class="hero-btn hero-btn-primary" th:href="@{/admin/notification-templates/add}">+ New Template</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total templates</div>
+                <div class="stat-value" th:text="${#lists.size(templates)}">0</div>
+                <div class="stat-note">Templates currently configured</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active templates</div>
+                <div class="stat-value" th:text="${#aggregates.sum(templates.![status.name() == 'ACTIVE' ? 1 : 0])}">0</div>
+                <div class="stat-note">Ready for automatic sending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Channels in use</div>
+                <div class="stat-value">3</div>
+                <div class="stat-note">Email, SMS and system notification</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Business events</div>
+                <div class="stat-value">4</div>
+                <div class="stat-note">Important milestones already mapped</div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div>
+                <h2>Template Library</h2>
+                <p>Review notification content, activation state, and message coverage in one place.</p>
+            </div>
+            <div class="toolbar-actions">
+                <div class="chip">Email / SMS / System</div>
+                <div class="chip">All business events</div>
+                <div class="chip">Live preview enabled</div>
+            </div>
+        </div>
+
+        <div class="table-shell">
+            <table>
+                <thead>
+                <tr>
+                    <th>Template</th>
+                    <th>Channel</th>
+                    <th>Event</th>
+                    <th>Status</th>
+                    <th>Subject</th>
+                    <th>Preview</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="template : ${templates}">
+                    <td>
+                        <div class="template-name" th:text="${template.templateName}">Template Name</div>
+                        <div class="template-meta" th:text="|ID #${template.id}|">ID #0</div>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:text="${template.channel}"
+                              th:classappend="${template.channel.name() == 'EMAIL'} ? ' channel-email' : (${template.channel.name() == 'SMS'} ? ' channel-sms' : ' channel-system')">
+                        </span>
+                    </td>
+                    <td>
+                        <div class="template-meta" th:text="${template.event}">Event</div>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:text="${template.status}"
+                              th:classappend="${template.status.name() == 'ACTIVE'} ? ' status-active' : ' status-draft'">
+                        </span>
+                    </td>
+                    <td>
+                        <div class="template-name" th:text="${template.subject}">Subject</div>
+                    </td>
+                    <td>
+                        <div class="message-preview" th:text="${template.messageBody}">Message body preview</div>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a class="action-btn edit-btn" th:href="@{/admin/notification-templates/{id}/edit(id=${template.id})}">Edit</a>
+                            <a class="action-btn preview-btn" th:href="@{/admin/notification-templates/{id}/edit(id=${template.id})}">Preview</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="foot">
+            <span th:text="|Showing ${#lists.size(templates)} templates|">Showing 0 templates</span>
+            <span>UC-39 ready for admin operations</span>
+        </div>
+    </section>
+</div>
+</body>
+</html>

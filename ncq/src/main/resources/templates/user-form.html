@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit} ? 'Edit User' : 'Add User'">User Form</title>
+    <style>
+        :root {
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --line: rgba(148, 163, 184, 0.24);
+            --card: rgba(255, 255, 255, 0.84);
+            --shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+            --hero-a: #0f3d3e;
+            --hero-b: #155e75;
+            --hero-c: #d97706;
+            --accent: #0f766e;
+            --accent-strong: #115e59;
+            --accent-soft: #ccfbf1;
+            --cancel: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 24%),
+                radial-gradient(circle at top right, rgba(217, 119, 6, 0.18), transparent 30%),
+                linear-gradient(180deg, #f5efe4 0%, #f8f6f0 44%, #f6f8fb 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px 20px 48px;
+        }
+
+        .hero {
+            border-radius: 30px;
+            padding: 34px;
+            color: #fff7ed;
+            background:
+                radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.18), transparent 18%),
+                linear-gradient(135deg, var(--hero-a) 0%, var(--hero-b) 50%, var(--hero-c) 100%);
+            box-shadow: var(--shadow);
+        }
+
+        .pill {
+            display: inline-flex;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: rgba(255, 247, 237, 0.12);
+            border: 1px solid rgba(255, 247, 237, 0.16);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 16px 0 10px;
+            font-size: clamp(30px, 5vw, 44px);
+            line-height: 1.08;
+        }
+
+        .hero p {
+            margin: 0;
+            color: rgba(255, 247, 237, 0.86);
+            line-height: 1.7;
+            max-width: 620px;
+        }
+
+        .form-card {
+            margin-top: -28px;
+            position: relative;
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.56);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 28px;
+        }
+
+        .section-title {
+            margin-bottom: 22px;
+        }
+
+        .section-title h2 {
+            margin: 0 0 6px;
+            font-size: 24px;
+        }
+
+        .section-title p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        input,
+        select {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 14px 16px;
+            font: inherit;
+            color: var(--ink);
+            background: rgba(255, 255, 255, 0.92);
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: rgba(15, 118, 110, 0.45);
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.12);
+        }
+
+        .hint {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            text-decoration: none;
+            border: none;
+            border-radius: 14px;
+            padding: 13px 18px;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background: var(--cancel);
+            color: #334155;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+            color: white;
+            box-shadow: 0 16px 28px rgba(15, 118, 110, 0.22);
+        }
+
+        .summary-box {
+            margin-top: 22px;
+            background: var(--accent-soft);
+            border: 1px solid rgba(15, 118, 110, 0.12);
+            color: var(--accent-strong);
+            border-radius: 20px;
+            padding: 16px 18px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .page {
+                padding: 18px 12px 32px;
+            }
+
+            .hero,
+            .form-card {
+                border-radius: 22px;
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <section class="hero">
+        <div class="pill" th:text="${isEdit} ? 'Edit User' : 'Add User'">Add User</div>
+        <h1 th:text="${isEdit} ? 'Update User Profile' : 'Create New User Account'">Create New User Account</h1>
+        <p th:text="${isEdit} ? 'Update identity, role, and account status for this user.' : 'Add a new user to the management system with the correct role and access state.'">
+            Add a new user to the management system with the correct role and access state.
+        </p>
+    </section>
+
+    <section class="form-card">
+        <div class="section-title">
+            <h2 th:text="${isEdit} ? 'Edit account details' : 'Enter account details'">Enter account details</h2>
+            <p>Keep the information consistent so the admin team can manage permissions reliably.</p>
+        </div>
+
+        <form th:action="${isEdit} ? @{/admin/users/{id}/edit(id=${user.id})} : @{/admin/users/add}"
+              th:object="${user}"
+              method="post">
+            <div class="form-grid">
+                <div class="field full">
+                    <label for="fullName">Full name</label>
+                    <input id="fullName" type="text" th:field="*{fullName}" placeholder="Enter full name" required>
+                    <div class="hint">Use the employee's official full name.</div>
+                </div>
+
+                <div class="field full">
+                    <label for="email">Email address</label>
+                    <input id="email" type="email" th:field="*{email}" placeholder="name@company.com" required>
+                    <div class="hint">This email will be used to identify the account.</div>
+                </div>
+
+                <div class="field">
+                    <label for="role">Role</label>
+                    <select id="role" th:field="*{role}" required>
+                        <option value="">Select role</option>
+                        <option th:each="role : ${roles}" th:value="${role}" th:text="${role}"></option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="status">Status</label>
+                    <select id="status" th:field="*{status}" required>
+                        <option value="">Select status</option>
+                        <option th:each="status : ${statuses}" th:value="${status}" th:text="${status}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="summary-box">
+                <strong th:text="${isEdit} ? 'Editing existing user.' : 'Creating a new user.'">Creating a new user.</strong>
+                Make sure the role and status reflect the person's current responsibility and access level.
+            </div>
+
+            <div class="actions">
+                <a class="btn btn-secondary" th:href="@{/admin/users}">Cancel</a>
+                <button class="btn btn-primary" type="submit" th:text="${isEdit} ? 'Save Changes' : 'Create User'">Create User</button>
+            </div>
+        </form>
+    </section>
+</div>
+</body>
+</html>
